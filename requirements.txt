@@ -1,0 +1,15 @@
+python-dotenv==1.1.1
+langfuse==3.3.4
+langchain==0.3.27
+langchain-core==0.3.76
+langchain-groq==0.3.8
+langchain-openai==1.0.2
+groq==0.31.1
+requests==2.32.5
+crewai==0.186.1
+litellm==1.74.9
+openinference-instrumentation==0.1.38
+openinference-instrumentation-crewai==0.1.12
+openinference-instrumentation-litellm==0.1.25
+fastapi==0.116.1
+uvicorn==0.35.0
