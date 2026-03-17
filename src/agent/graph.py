@@ -1,5 +1,5 @@
 """LangGraph single-node graph template — customized to call an OpenAI model."""
-
+"""LangGraph single-node graph template — customized to call an OpenAI model."""
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict
@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI
 class Context(TypedDict):
     """Optional context parameters for the agent."""
     my_configurable_param: str
-    model_name: str  # ← added for dynamic model selection
+    model_name: str
 
 # ---- State definition ----
 @dataclass
@@ -21,21 +21,20 @@ class State:
     user_input: str = ""
     text: str = ""
     response: str = ""
-    model_used: str = ""  # ← track which model was used
+    model_used: str = ""
 
 # ---- Node logic ----
 async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
-    # ← dynamic model selection
-    model_name = runtime.config.get("model_name", "gpt-4o-mini")
+    # ← use runtime.context instead of runtime.config
+    model_name = runtime.context.get("model_name", "gpt-4o-mini")
     model = ChatOpenAI(model=model_name)
-
     user_message = getattr(state, "user_input", "") or getattr(state, "text", "") or "Hello!"
     system_prompt = "Always respond in 3 lines or less. Be concise and direct."
     final_prompt = f"{system_prompt}\n\nUser: {user_message}"
     response = await model.ainvoke(final_prompt)
     return {
         "response": response.content,
-        "model_used": model_name  # ← track model
+        "model_used": model_name
     }
 
 # ---- Define the graph ----
