@@ -12,29 +12,31 @@ from langchain_openai import ChatOpenAI
 class Context(TypedDict):
     """Optional context parameters for the agent."""
     my_configurable_param: str
-
+    model_name: str  # ← added for dynamic model selection
 
 # ---- State definition ----
 @dataclass
 class State:
     """The state that moves through the graph."""
     user_input: str = ""
-    text: str = ""      
+    text: str = ""
     response: str = ""
-
-
-# ---- Model setup ----
-model = ChatOpenAI(model="gpt-4o-mini")  # You can change this to "gpt-4o" or "gpt-3.5-turbo"
-
+    model_used: str = ""  # ← track which model was used
 
 # ---- Node logic ----
 async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
+    # ← dynamic model selection
+    model_name = runtime.config.get("model_name", "gpt-4o-mini")
+    model = ChatOpenAI(model=model_name)
+
     user_message = getattr(state, "user_input", "") or getattr(state, "text", "") or "Hello!"
     system_prompt = "Always respond in 3 lines or less. Be concise and direct."
     final_prompt = f"{system_prompt}\n\nUser: {user_message}"
     response = await model.ainvoke(final_prompt)
-    return {"response": response.content}
-
+    return {
+        "response": response.content,
+        "model_used": model_name  # ← track model
+    }
 
 # ---- Define the graph ----
 graph = (
